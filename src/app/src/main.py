@@ -1,5 +1,6 @@
 import os
 import boto3
+import io 
 import logging
 import dlt
 import xmltodict
@@ -23,11 +24,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # AWS Clients
-aws_config = (
-	{'region_name': 'eu-west-2', 'endpoint_url': ENDPOINT_URL}
-	if ENVIRONMENT == 'local'
-	else {}
-)
+aws_config = {'region_name': 'eu-west-2', 'endpoint_url': ENDPOINT_URL, 'aws_access_key_id': 'xxx', 'aws_secret_access_key': 'xxx'} if ENVIRONMENT == 'local' else {}
 s3_client = boto3.client('s3', **aws_config)
 
 
@@ -126,12 +123,12 @@ def filter_results(data: Any) -> pd.DataFrame:
     Returns the cleaned DataFrame.
     """
     try:
-        logger.info(f"Filtering results...")
+        logger.info("Filtering results...")
         if isinstance(data, list):
             df = pd.DataFrame(data)
 
         else: 
-            logger.error(f"Failed to write data to dataframe, confirm the structure of data")
+            logger.error("Failed to write data to dataframe, confirm the structure of data")
 
         logger.info(f"DataFrame created with shape: {df.shape}")
 
@@ -145,8 +142,6 @@ def filter_results(data: Any) -> pd.DataFrame:
         logger.error(f"Failed to filter results: {e}")
         return pd.DataFrame()
     
-
-import io
 
 def write_df_to_s3(df: pd.DataFrame, bucket: str, key: str) -> bool:
     """
