@@ -15,7 +15,8 @@ from dlt.sources.rest_api import (
 # Environment Variables
 ENVIRONMENT = os.getenv('ENVIRONMENT', 'local')
 ENDPOINT_URL = os.getenv('ENDPOINT_URL', 'http://localhost:4566')
-FILE_LOCATION = os.getenv('FILE_LOCATION', '50-years/src/data/apc250606.xml')
+FILE_LOCATION = os.getenv('FILE_LOCATION', '50-years/src/data/Cancer Data12A.csv')
+S3_BUCKET = os.getenv('S3_BUCKET', 'local-bucket')
 
 # Logging
 logging.basicConfig(level=logging.INFO)
@@ -98,7 +99,7 @@ def load_patent_api_source(
     yield from rest_api_resources(config)
 
 
-def load_api_patents():
+def load_api_patents() -> None:
     """
     This invokes the API pipeline for production, at the minute this should only be used for testing the 
     pipeline & not necessarily assume the schema or data contents
@@ -119,10 +120,62 @@ def load_api_patents():
         logger.error(f"Failed to load patents data: {e}")
 
 
+def filter_results(data: Any) -> pd.DataFrame:
+    """
+    Converts the input data to a DataFrame and applies basic filtering logic.
+    Returns the cleaned DataFrame.
+    """
+    try:
+        logger.info(f"Filtering results...")
+        if isinstance(data, list):
+            df = pd.DataFrame(data)
+
+        else: 
+            logger.error(f"Failed to write data to dataframe, confirm the structure of data")
+
+        logger.info(f"DataFrame created with shape: {df.shape}")
+
+        filtered_df = df[df['Drugs_and_Chemistry'] == 1]
+
+        logger.info(f"DataFrame filtered: {filtered_df.shape}")
+
+        return filtered_df 
+
+    except Exception as e:
+        logger.error(f"Failed to filter results: {e}")
+        return pd.DataFrame()
+    
+
+import io
+
+def write_df_to_s3(df: pd.DataFrame, bucket: str, key: str) -> bool:
+    """
+    Writes resulting DataFrame to S3
+    """
+    try:
+        csv_buffer = io.StringIO()
+        df.to_csv(csv_buffer, index=False)
+
+        s3_client.put_object(
+            Bucket=bucket,
+            Key=key,
+            Body=csv_buffer.getvalue()
+        )
+
+        logger.info(f"Successfully wrote DataFrame to s3://{bucket}/{key}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Failed to write DataFrame to S3: {e}")
+        return False
+
+
 if __name__ == "__main__":
     try: 
         logger.info(f"Starting in {ENVIRONMENT}")
         data = load_local_file(FILE_LOCATION) if ENVIRONMENT == 'local' else load_api_patents()
+        result = filter_results(data)
+        write_df_to_s3(result, S3_BUCKET, FILE_LOCATION)
         logger.info("Finished!")
 
     except Exception: 

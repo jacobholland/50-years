@@ -12,6 +12,7 @@ dependencies = [
     { name = "pandas" },
     { name = "ruff" },
     { name = "selenium" },
+    { name = "setuptools" },
     { name = "xmltodict" },
 ]
 
@@ -22,6 +23,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.0" },
     { name = "ruff", specifier = ">=0.11.13" },
     { name = "selenium", specifier = ">=4.33.0" },
+    { name = "setuptools", specifier = "<81" },
     { name = "xmltodict", specifier = ">=0.14.2" },
 ]
 
