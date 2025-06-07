@@ -32,7 +32,7 @@ Lastly, the resulting fileset is written to a mock local blob storage (S3) to be
 Setup a mock local cloud environment (AWS) as a datastore to which data can be written 
 `docker compose up --build -d` 
 
-### 2. Activate Virtual Environment 
+### 2. (Optional) Activate Virtual Environment 
 Activate a local virtual environment:
 `uv venv`
 
@@ -44,3 +44,7 @@ This will run the `main.py` script
 You can lint & standardise files with ruff via
 `ruff check --fix` 
 `ruff format` 
+
+### 5. Retrieve final files
+You can optionally retrieve files from the local bucket to view the final product
+`aws s3api list-objects-v2 --endpoint-url localhost:4566 --bucket local-bucket`

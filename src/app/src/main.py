@@ -6,6 +6,8 @@ import dlt
 import xmltodict
 import json
 import pandas as pd
+import uuid
+import pyarrow
 from typing import Any, Optional
 from dlt.sources.rest_api import (
     RESTAPIConfig,
@@ -161,10 +163,12 @@ def write_df_to_s3(df: pd.DataFrame, bucket: str, key: str) -> bool:
     Writes resulting DataFrame to S3
     """
     try:
-        csv_buffer = io.StringIO()
-        df.to_csv(csv_buffer, index=False)
+        key = f"{uuid.uuid4()}.parquet"
 
-        s3_client.put_object(Bucket=bucket, Key=key, Body=csv_buffer.getvalue())
+        out_buffer = io.BytesIO()
+        df.to_parquet(out_buffer, index=False)
+
+        s3_client.put_object(Bucket=bucket, Key=key, Body=out_buffer.getvalue())
 
         logger.info(f"Successfully wrote DataFrame to s3://{bucket}/{key}")
         return True
