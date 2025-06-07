@@ -126,9 +126,14 @@ def filter_results(data: Any) -> pd.DataFrame:
         logger.info("Filtering results...")
         if isinstance(data, list):
             df = pd.DataFrame(data)
-
+        elif isinstance(data, dict): 
+            if len(data) == 1 and isinstance(list(data.values())[0], list):
+                df = pd.DataFrame(list(data.values())[0])
+            else:
+                df = pd.json_normalize(data)
         else: 
             logger.error("Failed to write data to dataframe, confirm the structure of data")
+            raise
 
         logger.info(f"DataFrame created with shape: {df.shape}")
 
@@ -168,9 +173,13 @@ def write_df_to_s3(df: pd.DataFrame, bucket: str, key: str) -> bool:
 if __name__ == "__main__":
     try: 
         logger.info(f"Starting in {ENVIRONMENT}")
-        data = load_local_file(FILE_LOCATION) if ENVIRONMENT == 'local' else load_api_patents()
-        result = filter_results(data)
-        write_df_to_s3(result, S3_BUCKET, FILE_LOCATION)
+        if ENVIRONMENT == 'local': 
+            data = load_local_file(FILE_LOCATION) 
+            result = filter_results(data)
+            write_df_to_s3(result, S3_BUCKET, FILE_LOCATION)
+        else: 
+            # This path should only be expanded post-MVP to programmatically retrieve data
+            load_api_patents()
         logger.info("Finished!")
 
     except Exception: 
