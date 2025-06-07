@@ -15,6 +15,12 @@ This data is then written to a pd.DataFrame for in-memory processing (at the min
 
 Lastly, the resulting fileset is written to a mock local blob storage (S3) to be used for other services. 
 
+### Post-MVP Steps
+
+1. Setup programmatic access to the API endpoints (either host these applications in the US or determine how we can appropriately access these resources).
+2. Understand the exact nature of what this data is going to be used for to better inform next level design decisions. 
+3. Setup testing for the production inputs
+
 ## Getting Started
 
 ### 0. Pre-requisites 
@@ -34,6 +40,7 @@ Activate a local virtual environment:
 This will run the `main.py` script 
 `uv run src/app/src/main.py`
 
-### 4. Lint
+### 4. Lint & format
 You can lint & standardise files with ruff via
 `ruff check --fix` 
+`ruff format` 
