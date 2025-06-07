@@ -1,0 +1,15 @@
+[project]
+name = "50-years"
+version = "0.1.0"
+description = "An MVP for loading / interacting with US patent data"
+author = "Jacob Holland <jacob.w.holland@gmail.com>"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "boto3>=1.38.32",
+    "dlt[duckdb]>=1.11.0",
+    "pandas>=2.3.0",
+    "ruff>=0.11.13",
+    "selenium>=4.33.0",
+    "xmltodict>=0.14.2",
+]

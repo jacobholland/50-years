@@ -1,0 +1,41 @@
+services:
+
+  localstack:
+    image: localstack/localstack:latest
+    hostname: localstack
+    container_name: localstack
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+    ports:
+      - "127.0.0.1:4566:4566"            
+      - "127.0.0.1:4510-4559:4510-4559"
+    volumes:
+      - "./src/aws/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./src/aws/data:/app/data"
+    networks:
+      - fifty-years-network
+
+  app:
+    build: src/app/.
+    container_name: app
+    hostname: app
+    environment: 
+      - ENVIRONMENT=dev
+      - ENDPOINT_URL=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN}
+      - AWS_REGION=${AWS_REGION}
+    volumes:
+      - "./src/app/:/usr/src/app"      
+    depends_on:
+      localstack:
+        condition: service_healthy
+    networks:
+      - fifty-years-network      
+
+networks:
+  fifty-years-network:
+    name: fifty-years-network
